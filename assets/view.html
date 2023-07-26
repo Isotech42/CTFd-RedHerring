@@ -1,0 +1,8 @@
+{% extends "challenge.html" %}
+
+{% block description %}
+{{ challenge.html }}
+<br />
+The address you need to access : <a href="http://{{challenge.get_container_address()}}:{{ challenge.get_container_port() }}">{{challenge.get_container_address()}}:{{ challenge.get_container_port() }}</a>
+
+{% endblock %}

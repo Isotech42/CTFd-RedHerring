@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block content %}
+	<div class="jumbotron">
+		<div class="container">
+			<h1>RedHerring - Cheat Monitor</h1>
+		</div>
+	</div>
+    <div class="container">
+        <div id="cheat" class="row">
+            <div class="col-md-12">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <td scope="col" width="10px"><b>ID</b></td>
+                            <td scope="col"><b>Challenge</b></td>
+                            <td scope="col"><b>Cheat Team</b></td>
+                            <td scope="col"><b>Sharer Team</b></td>
+                            <td scope="col"><b>Flag shared</b></td>
+                            <td scope="col"><b>Date</b></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for cheater in cheaters %}
+                        <tr>
+                            <th scope="row" class="text-center">{{ loop.index }}</th>
+                            <td><a href="{{ request.script_root }}/admin/challenges/{{ cheater.challengeid }}">{{ cheater.challenge_name() }}</a></td>
+                            <td><a href="{{ request.script_root }}/teams/{{ cheater.cheatteamid }}">{{ cheater.cheated_team_name() }}</a></td>
+                            <td><a href="{{ request.script_root }}/teams/{{ cheater.sharerteamid }}">{{ cheater.shared_team_name() }}</a></td>
+                            <td>{{ cheater.flag_content() }}</td>
+                            <td>{{ cheater.date}}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
