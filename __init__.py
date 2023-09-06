@@ -1,5 +1,6 @@
 import os
 import json
+
 from flask import render_template, Blueprint
 from flask import request, jsonify,session
 
@@ -34,24 +35,26 @@ from CTFd.config import Config
 PLUGIN_PATH = os.path.dirname(__file__)
 CONFIG = json.load(open("{}/config.json".format(PLUGIN_PATH)))
 
-red = Blueprint('red_herring', __name__, template_folder="templates")
+directory_name = PLUGIN_PATH.split(os.sep)[-1]
+
+red = Blueprint(directory_name, __name__, template_folder="templates")
 
 class RedHerringTypeChallenge(BaseChallenge):
     id = "red_herring"  # Unique identifier used to register challenges
     name = "red_herring"  # Name of a challenge type
     templates = {  # Nunjucks templates used for each aspect of challenge editing & viewing
-        'create': '/plugins/red_herring/assets/create.html',  # Used to render the challenge when creating/editing
-        'update': '/plugins/red_herring/assets/update.html',  # Used to render the challenge when updating
-        'view': '/plugins/red_herring/assets/view.html',  # Used to render the challenge when viewing
+        'create': '/plugins/'+ directory_name +'/assets/create.html',  # Used to render the challenge when creating/editing
+        'update': '/plugins/' + directory_name + '/assets/update.html',  # Used to render the challenge when updating
+        'view': '/plugins/' + directory_name + '/assets/view.html',  # Used to render the challenge when viewing
     }
     scripts = {  # Scripts that are loaded when a template is loaded
-        'create': '/plugins/red_herring/assets/create.js',  # Used to init the create template JavaScript
-        'update': '/plugins/red_herring/assets/update.js',  # Used to init the create template JavaScript
-        'view': '/plugins/red_herring/assets/view.js',  # Used to init the create template JavaScript
+        'create': '/plugins/'+ directory_name +'/assets/create.js',  # Used to init the create template JavaScript
+        'update': '/plugins/'+ directory_name +'/assets/update.js',  # Used to init the create template JavaScript
+        'view': '/plugins/'+ directory_name +'/assets/view.js',  # Used to init the create template JavaScript
     }
 
     # Route at which files are accessible. This must be registered using register_plugin_assets_directory()
-    route = "/plugins/red_herring/assets/"
+    route = '/plugins/'+ directory_name +'/assets/'
     challenge_model = RedHerringChallenge
     
     @staticmethod
@@ -70,7 +73,9 @@ class RedHerringTypeChallenge(BaseChallenge):
             value=data['value'],
             state=data['state'],
             type=data['type'],
+            dockerfile= data['buildfile']
         )
+
         buildfile = data['buildfile']
 
         db.session.add(challenge)
@@ -82,8 +87,14 @@ class RedHerringTypeChallenge(BaseChallenge):
             # For each team, create a flag and a container for the challenge
             for team in teams:
                 generated_flag = generate_flag()
+
+                # Get the last port used
+                last_container_port = Containers.query.order_by(Containers.port.desc()).first()
                 
-                port = globals.PORT_CONTAINERS_START
+                if last_container_port is None:
+                    port = globals.PORT_CONTAINERS_START
+                else:
+                    port = last_container_port.port + 1
 
                 # Generate the container
                 container_name = create_docker_container(buildfile=buildfile, flag=generated_flag, port=port, challenge_name=challenge.name, team_id=team.id)
@@ -91,13 +102,13 @@ class RedHerringTypeChallenge(BaseChallenge):
                 # Save the container in the database
                 container = Containers(name=container_name, port=port, dockerfile=buildfile, challengeid=challenge.id, teamid=team.id)
                 db.session.add(container)
-                globals.PORT_CONTAINERS_START += 1
 
                 # Save the flag in the database
                 flag = Flags(challenge_id = challenge.id, type = "red_herring", content = generated_flag, data = team.id)
                 db.session.add(flag)
 
             db.session.commit()
+            
         
         return challenge
 
@@ -151,6 +162,6 @@ def load(app):
     FLAG_CLASSES['red_herring'] = RedHearingFlag
 
     app.register_blueprint(red)
-    register_plugin_assets_directory(app, base_path="/plugins/red_herring/assets/")
+    register_plugin_assets_directory(app, base_path='/plugins/'+ directory_name +'/assets/')
 
     load_hooks()

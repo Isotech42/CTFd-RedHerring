@@ -2,7 +2,10 @@
 
 {% block description %}
 {{ challenge.html }}
-<br />
-The address you need to access : <a href="http://{{challenge.get_container_address()}}:{{ challenge.get_container_port() }}">{{challenge.get_container_address()}}:{{ challenge.get_container_port() }}</a>
+
+{% if challenge.get_container_address() is defined and challenge.get_container_port() is defined %}
+    <br />
+    The address you need to access : <a href="http://{{challenge.get_container_address()}}:{{ challenge.get_container_port() }}">{{challenge.get_container_address()}}:{{ challenge.get_container_port() }}</a>
+{% endif %}
 
 {% endblock %}

@@ -18,10 +18,15 @@ def on_team_create(mapper, conn, team):
 
         # Create the container
         # Get the next port to use
-        port = globals.PORT_CONTAINERS_START
+        last_container_port = Containers.query.order_by(Containers.port.desc()).first()
+        
+        if last_container_port is None:
+            port = globals.PORT_CONTAINERS_START
+        else:
+            port = last_container_port.port + 1
 
         # Get the buildfile of the challenge
-        buildfile = Containers.query.filter_by(challengeid=challenge.id).first().dockerfile
+        buildfile = challenge.dockerfile
 
         # Generate the container
         container_name = create_docker_container(buildfile=buildfile, flag=generated_flag, port=port, challenge_name=challenge.name, team_id=team.id)
@@ -29,7 +34,6 @@ def on_team_create(mapper, conn, team):
         # Save the container in the database
         container = Containers(name=container_name, port=port, dockerfile=buildfile, challengeid=challenge.id, teamid=team.id)
         db.session.add(container)
-        globals.PORT_CONTAINERS_START += 1
 
 def load_hooks():
     listen(Teams, "after_insert", on_team_create)

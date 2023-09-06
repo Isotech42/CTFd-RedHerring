@@ -7,12 +7,21 @@ class RedHerringChallenge(Challenges):
     id = db.Column(
         db.Integer, db.ForeignKey("challenges.id", ondelete="CASCADE"), primary_key=True
     )
+    dockerfile = db.Column(db.Text)
 
     def __init__(self, *args, **kwargs):
         super(RedHerringChallenge, self).__init__(**kwargs)
+        self.dockerfile = kwargs["dockerfile"]
 
     def get_container_port(self):
-        teamid = get_current_team().id
+        try :
+            teamid = get_current_team().id
+        except:
+            teamid = None
+        
+        if teamid is None:
+            return None
+        
         container = Containers.query.filter_by(challengeid=self.id, teamid=teamid).first()
         return container.port
     
