@@ -9,6 +9,14 @@ def on_team_create(mapper, conn, team):
     # When a team is created, create a new flag for each challenge that is a "red_herring" type
     red_herring_challenges = Challenges.query.filter_by(type="red_herring").all()
 
+    port = globals.PORT_CONTAINERS_START
+    if len(red_herring_challenges) != 0:
+
+        # Get the last port used
+        last_container = Containers.query.order_by(Containers.port.desc()).first()
+        if last_container is not None:
+            port = last_container.port + 1
+
     for challenge in red_herring_challenges:
         generated_flag = generate_flag()
 
@@ -17,14 +25,6 @@ def on_team_create(mapper, conn, team):
         db.session.add(flag)
 
         # Create the container
-        # Get the next port to use
-        last_container_port = Containers.query.order_by(Containers.port.desc()).first()
-        
-        if last_container_port is None:
-            port = globals.PORT_CONTAINERS_START
-        else:
-            port = last_container_port.port + 1
-
         # Get the buildfile of the challenge
         buildfile = challenge.dockerfile
 
@@ -33,6 +33,7 @@ def on_team_create(mapper, conn, team):
 
         # Save the container in the database
         container = Containers(name=container_name, port=port, dockerfile=buildfile, challengeid=challenge.id, teamid=team.id)
+        port += 1
         db.session.add(container)
 
 def load_hooks():

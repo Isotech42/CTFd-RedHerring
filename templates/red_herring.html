@@ -19,7 +19,6 @@
                             <td scope="col"><b>Challenge</b></td>
                             <td scope="col"><b>Cheat Team</b></td>
                             <td scope="col"><b>Sharer Team</b></td>
-                            <td scope="col"><b>Flag shared</b></td>
                             <td scope="col"><b>Date</b></td>
                         </tr>
                     </thead>
@@ -30,7 +29,6 @@
                             <td><a href="{{ request.script_root }}/admin/challenges/{{ cheater.challengeid }}">{{ cheater.challenge_name() }}</a></td>
                             <td><a href="{{ request.script_root }}/teams/{{ cheater.cheatteamid }}">{{ cheater.cheated_team_name() }}</a></td>
                             <td><a href="{{ request.script_root }}/teams/{{ cheater.sharerteamid }}">{{ cheater.shared_team_name() }}</a></td>
-                            <td>{{ cheater.flag_content() }}</td>
                             <td>{{ cheater.date}}</td>
                         </tr>
                     {% endfor %}

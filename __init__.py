@@ -35,7 +35,7 @@ from CTFd.config import Config
 PLUGIN_PATH = os.path.dirname(__file__)
 CONFIG = json.load(open("{}/config.json".format(PLUGIN_PATH)))
 
-directory_name = PLUGIN_PATH.split(os.sep)[-1]
+directory_name = PLUGIN_PATH.split(os.sep)[-1] # Get the directory name of this file
 
 red = Blueprint(directory_name, __name__, template_folder="templates")
 
@@ -84,28 +84,30 @@ class RedHerringTypeChallenge(BaseChallenge):
         # Check if there is teams that are created
         teams = Teams.query.all()
         if len(teams) > 0:
+
+            # Get the last port used
+            last_container = Containers.query.order_by(Containers.port.desc()).first()
+            if last_container_port is None:
+                port = globals.PORT_CONTAINERS_START
+            else:
+                port = last_container.port + 1
+
             # For each team, create a flag and a container for the challenge
             for team in teams:
                 generated_flag = generate_flag()
-
-                # Get the last port used
-                last_container_port = Containers.query.order_by(Containers.port.desc()).first()
-                
-                if last_container_port is None:
-                    port = globals.PORT_CONTAINERS_START
-                else:
-                    port = last_container_port.port + 1
 
                 # Generate the container
                 container_name = create_docker_container(buildfile=buildfile, flag=generated_flag, port=port, challenge_name=challenge.name, team_id=team.id)
 
                 # Save the container in the database
                 container = Containers(name=container_name, port=port, dockerfile=buildfile, challengeid=challenge.id, teamid=team.id)
+                port += 1
                 db.session.add(container)
 
                 # Save the flag in the database
                 flag = Flags(challenge_id = challenge.id, type = "red_herring", content = generated_flag, data = team.id)
                 db.session.add(flag)
+                
 
             db.session.commit()
             

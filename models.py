@@ -58,9 +58,6 @@ class CheaterTeams(db.Model):
 
     def challenge_name(self):
         return Challenges.query.filter_by(id=self.challengeid).first().name
-    
-    def flag_content(self):
-        return Flags.query.filter_by(id=self.flagid).first().content
 
 class Containers(db.Model):
     id = db.Column(db.Integer, primary_key=True)
