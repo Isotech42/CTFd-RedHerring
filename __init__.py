@@ -112,7 +112,11 @@ class RedHearingFlag(CTFdStaticFlag):
         # Compare each character in the flag if the team id is the one that is supposed to solve the challenge
         curr_team_id = get_current_team().id
 
+        if len(saved_flag) != len(provided_flag):
+            return False
+        
         result = 0
+
         for x, y in zip(saved_flag, provided_flag):
             result |= ord(x) ^ ord(y)
         
@@ -127,7 +131,6 @@ class RedHearingFlag(CTFdStaticFlag):
                 db.session.add(cheater)
                 return False
         else:
-            print("wrong flag")
             return False
 
 
